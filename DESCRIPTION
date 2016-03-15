@@ -1,0 +1,11 @@
+Package: inseqDiv
+Type: Package
+Title: Diversity analysis of Viral Insertion site in Gene Therapy
+Version: 1.0
+Date: 2013-08-04
+Author: shahzad ahmad
+Maintainer: shahzad ahmad <shahzad.gcu@hotmail.com>
+Description: This package include funtions which performs diversity analysis of viral insertion sites in Gene therapy studies. We applied the new PMD index for quantifying the monoclonal, oligoclonal and polyclonal classes of clones resulting during gene therapy clinical trials. 
+License: GPL-3
+Depends: ggplot2
+Packaged: 2013-10-23 14:49:29 UTC; shahzad
