@@ -1,5 +1,5 @@
 pmdscatterplot <-
-function(pmdres,nameofplot="ScatterPlot",labelling=T,labelsize=3,spotRadius=7){
+function(pmdres,nameofplot="",labelling=T,labelsize=3,spotRadius=7){
 
     x<-as.data.frame(pmdres)
     pmd_Index<-x[,5]
