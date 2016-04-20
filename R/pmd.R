@@ -18,10 +18,8 @@ dataTransformation<-function(data,ISrange=c(1,2,4),factorRange=c(12,13,14),thr=3
     mat<-sortdata[,1:3]
     #for (i in 1:dim(sortdata)[1]) {
     for (i in 1:nrow(mat)) {
-
         if(cycle>=1000) {cycDisp<-cycle+cycDisp;print(cycDisp);cycle=0}   # Job advancement
         cycle<-cycle+1
-
         # if the location is within thr (3) bases change to the previous
         position<-mat[i,2]
         #if (abs(sortdata[i,2]-prec)<=thr) {prec<-sortdata[i,2];sortdata[i,2]<-first;}
@@ -59,23 +57,47 @@ dataTransformation<-function(data,ISrange=c(1,2,4),factorRange=c(12,13,14),thr=3
 }
 
 pmd <-
-function(data,ISrange=c(1,2,4),factorRange=c(12,13,14),thr=3,threshold = 1.1,noNaN=TRUE){
+function(data,ISrange=c(1,2,4),factorRange=c(12,13,14),thr=3,threshold = 1.1,noNaN=TRUE,chao=FALSE){
     pmd<-list(data=data,ISrange=ISrange,factorRange=factorRange,thr=thr,threshold=threshold,noNaN=noNaN) #build the object
     class(pmd) <- "pmd"
     x<-dataTransformation(pmd$data,pmd$ISrange,pmd$factorRange,pmd$thr)
     speciesData2<-t(x)
+    pmd$speciesData<-speciesData2
     ## calculation of the richness of species data
     pmd$shann<-shannon(x)
     pmd$simpson<-simpson(x)
-    pmd$richness<-numeric(nrow(speciesData2))
-    for(i in 1:nrow(speciesData2)){
+    # if chao=FALSE then the richnes is computed without correction
+    if(!chao) {
+      for(i in 1:nrow(speciesData2)){
         tem<-0
         for(j in 1:ncol(speciesData2)){
-            if(speciesData2[i,j]!=0){
-                tem=tem+1
-            }
+          if(speciesData2[i,j]!=0){
+            tem=tem+1
+          }
+          pmd$richness[i]<-log(tem)
         }
-        pmd$richness[i]<-log(tem)
+      }
+    # if chau=TRUE we use chao as abundance richness estimator 
+    # if the number of specie is low is possible that the chao estimator return NaN or Inf
+    } else {
+      #print(nrow(speciesData2))
+      for(i in 1:nrow(speciesData2)){
+        tem<-0
+        singleton<-0
+        doubleton<-0
+        for(j in 1:ncol(speciesData2)){
+          if(speciesData2[i,j]>0){
+            tem=tem+1
+          }
+          if (speciesData2[i,j]==1){
+            singleton=singleton+1
+          } else if (speciesData2[i,j]==2){
+            doubleton=doubleton+1
+          }
+        }
+        pmd$richness[i]<-log(tem+(singleton*singleton/(2*doubleton)))
+        #print (c(tem,singleton,doubleton,pmd$richness[i]))
+      }
     }
     ## calculation of eveness of the species
     abun.vec<-rowSums(speciesData2)
@@ -83,7 +105,6 @@ function(data,ISrange=c(1,2,4),factorRange=c(12,13,14),thr=3,threshold = 1.1,noN
     vec.eve<-numeric(0)
     for(i in 1:length(maxrow)){
         evenness<--log(maxrow[i]/abun.vec[i])
-
         vec.eve[i]<-evenness
     }
     ## calcultion of the pmd index of the species
