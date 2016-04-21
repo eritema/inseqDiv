@@ -68,18 +68,25 @@ dataTransformation<-function(data,ISrange=c(1,2,4),factorRange=c(12,13,14),thr=3
     return(finalMat)
 }
 
+
+
 subSample<-function(data,fraction) {
   print("start data subsampling:")
-  print(dim(data))
+  
+  # Replicate each row #nreads times
+  # seq_len(num) return a regular sequence from 1 to num
+  # rep(seq[],times[]) replicate the element seq[i] times[i] times
+  # Combining the two return an index that is used to replicate the rows of mapApp
   matApp<-data[rep(seq_len(nrow(data)), data[,3]), ]
+  
+  # Each row has to count 1 in clonality
   matApp[,3]<-1
-  #print("Dimension before Subsampling:")
-  #print(dim(matApp)[1])
+  
+  # sample the rows of matApp 1-fraction times
   matApp<-matApp[sample(nrow(matApp),as.integer(sum(matApp$V3)*(1-fraction)),replace=T ), ]
-#  index<-sample(1:nrow(matApp),as.integer(sum(matApp$V3)*fraction),replace=T)
-#  matApp<-matApp[-index,]
-  #print("Dimension after Subsampling:")
-  #print(dim(matApp)[1])
+
+  # aggregate split the matrix (matApp) on the basis of the factors on the right side of the formula (all: .)
+  # operate the numerical function (sum) of the factor(s) on the left side (V3)
   matApp<-aggregate(V3~., data=matApp, FUN=sum)
   
   # column 3 should be the ones that contains readsNumber
@@ -87,15 +94,12 @@ subSample<-function(data,fraction) {
   matApp[,ncol(matApp)]<-matApp[,3]
   matApp[,3]<-app
   
-  print(dim(matApp))
   print("End data subsampling")
   return(matApp)
 }
 
 pmd <-
 function(data,ISrange=c(1,2,4),factorRange=c(12,13,14),thr=3,threshold = 1.1,noNaN=TRUE,chao=FALSE,sub=FALSE,fraction=0.5){
-  
-  
   pmd<-list(data=data,ISrange=ISrange,factorRange=factorRange,thr=thr,threshold=threshold,noNaN=noNaN) #build the object
     class(pmd) <- "pmd"
     x<-dataTransformation(pmd$data,pmd$ISrange,pmd$factorRange,pmd$thr,sub,fraction)
